@@ -1,9 +1,111 @@
+use <gears/gears.scad>;
 use <reductor.scad>;
 
-motor_axel_height=7.5;
+debug = ["Assembled"];
 
-translate([-2.5, 8.5, motor_axel_height])
-tangent_reductor_worm();
+//l - length
+//w - width
+//h - height
 
-translate([-23, 14.5, 0])
-import("130_Micro_DC_Motor_3V-6V_8000RPM.stl");
+//motor description
+motor_l = 11;
+motor_w_cube = 6;
+motor_w_full = 9.9;
+motor_h = 8;
+motor_axle_d = 0.9;
+motor_axle_l = 8.8;
+motor_back_circle_d = 3.8;
+motor_back_circle_h = 1;
+motor_front_circle_d = 3.8;
+motor_front_circle_h = 0.6;
+eps = 0.01;
+
+
+//reductor description
+modul=0.5;
+worm_radius_scale=1;
+worm_length_scale = 0.91;
+worm_length=motor_axle_l*worm_length_scale;
+worm_hole=motor_axle_d*1.1;
+gear_tooth_number=20;
+gear_width=6;
+gear_hole=2;
+gear_teeth_angle=20;
+lead_angle=8;
+gear_radius=gear_tooth_number*modul/2;
+
+
+
+
+module tangent_reductor_gear() {
+    worm_gear(modul, gear_tooth_number, worm_radius_scale,
+              gear_width, worm_length, worm_hole, gear_hole,
+              gear_teeth_angle, lead_angle, false, true, 1, 0);
+}
+
+module tangent_reductor_worm() {
+    worm_gear(modul, gear_tooth_number, worm_radius_scale,
+              gear_width, worm_length, worm_hole, gear_hole,
+              gear_teeth_angle, lead_angle, false, true, 0, 1);
+}
+
+module dc_motor_draw() {
+    module cylinder_sector() {
+        seg = (motor_w_full-motor_w_cube)/2;
+        diameter = (motor_h*motor_h/4+seg*seg)/seg;
+        echo(diameter);
+        difference() {
+            translate([-diameter/2+seg,0,0])
+                cylinder(h=motor_l,d=diameter, $fn=100);
+            translate([-diameter/2,0,motor_l/2-eps/2])
+                cube([diameter, diameter+eps, motor_l+2*eps], center=true);
+        }
+    }
+    //left side of motor semicircle
+    translate([-motor_l/2,motor_w_cube/2, 0])
+        rotate([90, 0, 90])
+        cylinder_sector();
+
+    //motor main side
+    cube([motor_l,
+          motor_w_cube,
+          motor_h], center=true);
+
+    //right side of motor semicircle
+    translate([motor_l/2,-motor_w_cube/2, 0])
+        rotate([90, 0, 270])
+        cylinder_sector();
+
+    //back motor circle
+    translate([-motor_l/2, 0, 0])
+        rotate([0, 270, 0])
+        cylinder(h=motor_back_circle_h, d=motor_back_circle_d, $fn=100);
+
+    //front motor circle
+    translate([motor_l/2, 0, 0])
+        rotate([0, 90, 0])
+        cylinder(h=motor_front_circle_h, d=motor_front_circle_d, $fn=100);
+
+    //motor axle
+    translate([motor_front_circle_h+motor_l/2, 0, 0])
+        rotate([0, 90, 0])
+        cylinder(h=motor_axle_l, d=motor_axle_d, $fn=100);
+}
+
+
+module tangent_motor() {
+    translate([motor_l/2+motor_front_circle_h+motor_axle_l*(1-worm_length_scale)/2, 0, 0])
+    rotate([0, 0, 90])
+        tangent_reductor_worm();
+    dc_motor_draw();
+}
+
+
+for(val = debug){
+    if(val =="Motor")
+        dc_motor_draw();
+    if(val == "Worm")
+        tangent_reductor_worm();
+    if(val == "Assembled")
+        tangent_motor();
+}

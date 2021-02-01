@@ -1,7 +1,6 @@
 use <gears/gears.scad>;
-use <reductor.scad>;
 
-debug = ["Assembled"];
+debug = [];
 
 //l - length
 //w - width
@@ -20,22 +19,21 @@ motor_front_circle_d = 3.8;
 motor_front_circle_h = 0.6;
 eps = 0.01;
 
-
 //reductor description
 modul=0.5;
 worm_radius_scale=1;
 worm_length_scale = 0.91;
 worm_length=motor_axle_l*worm_length_scale;
 worm_hole=motor_axle_d*1.1;
-gear_tooth_number=20;
+gear_tooth_number=18;
 gear_width=6;
 gear_hole=2;
 gear_teeth_angle=20;
 lead_angle=8;
 gear_radius=gear_tooth_number*modul/2;
 
-
-
+function GetGearRadius() = gear_radius;
+function GetMotorBox() = [motor_l, motor_w_full, motor_h];
 
 module tangent_reductor_gear() {
     worm_gear(modul, gear_tooth_number, worm_radius_scale,
@@ -53,7 +51,6 @@ module dc_motor_draw() {
     module cylinder_sector() {
         seg = (motor_w_full-motor_w_cube)/2;
         diameter = (motor_h*motor_h/4+seg*seg)/seg;
-        echo(diameter);
         difference() {
             translate([-diameter/2+seg,0,0])
                 cylinder(h=motor_l,d=diameter, $fn=100);
@@ -108,4 +105,6 @@ for(val = debug){
         tangent_reductor_worm();
     if(val == "Assembled")
         tangent_motor();
+    if(val == "Gear")
+        tangent_reductor_gear();
 }

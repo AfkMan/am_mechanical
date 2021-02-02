@@ -4,7 +4,7 @@ use <MCAD/boxes.scad>
 axle_length=30;
 axle_radius=2;
 axle_stop_width = 1;
-axle_stop_offset = 1.1*GetMotorBox()[2];
+axle_stop_offset = 0.27*axle_length;
 wheel_width=4;
 wheel_radius=8;
 fastening_width=4;
@@ -17,7 +17,7 @@ function AxleRadius() = axle_radius;
 module tangent_axle(draw_axle=true, draw_gear=true,
                     draw_wheels=true, draw_stops=true) {
     if(draw_gear)
-        translate([GetGearRadius(), 0, 0])
+        translate([GetTangentMotorProperty("GearRadius"), 0, 0])
             tangent_reductor_gear();
 
     if(draw_axle)

@@ -1,6 +1,6 @@
 use <gears/gears.scad>;
 
-debug = [];
+debug = ["Assembled"];
 
 //l - length
 //w - width
@@ -17,6 +17,7 @@ motor_back_circle_d = 3.8;
 motor_back_circle_h = 1;
 motor_front_circle_d = 3.8;
 motor_front_circle_h = 0.6;
+motor_full_length = motor_l+motor_axle_l+motor_front_circle_h+motor_back_circle_h;
 eps = 0.01;
 
 //reductor description
@@ -32,8 +33,15 @@ gear_teeth_angle=20;
 lead_angle=8;
 gear_radius=gear_tooth_number*modul/2;
 
-function GetGearRadius() = gear_radius;
-function GetMotorBox() = [motor_l, motor_w_full, motor_h];
+function GetTangentMotorProperty(which) =
+    which == "GearRadius" ? gear_radius :
+    which == "WormRadius" ? worm_radius_scale :
+    which == "MotorFullLength" ? motor_full_length :
+    which == "MotorWidth" ? motor_w_full :
+    which == "MotorHeight" ? motor_h :
+    which == "Axle" ? [motor_axle_d, motor_axle_l] :
+    which == "FrontCircle" ? [motor_front_circle_d, motor_front_circle_h] :
+    assert(false, str("TangentMotor haven't property ", which));
 
 module tangent_reductor_gear() {
     worm_gear(modul, gear_tooth_number, worm_radius_scale,
@@ -91,10 +99,16 @@ module dc_motor_draw() {
 
 
 module tangent_motor() {
-    translate([motor_l/2+motor_front_circle_h+motor_axle_l*(1-worm_length_scale)/2, 0, 0])
-    rotate([0, 0, 90])
-        tangent_reductor_worm();
-    dc_motor_draw();
+    //motor in center
+    translate([motor_back_circle_h+motor_l/2-
+               motor_full_length/2
+               ,0,0]) {
+        translate([motor_l/2+motor_front_circle_h+
+                   motor_axle_l*(1.1-worm_length_scale)/2, 0, 0])
+            rotate([0, 0, 90])
+            tangent_reductor_worm();
+        dc_motor_draw();
+    }
 }
 
 

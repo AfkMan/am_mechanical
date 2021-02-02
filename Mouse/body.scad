@@ -3,12 +3,17 @@ use <tangent_motor.scad>
 use <axle.scad>
 
 debug = ["Body"];
-gear_radius = GetGearRadius();
+gear_radius = GetTangentMotorProperty("GearRadius");
+surface_height = 2;
 eps = 0.1;
 
 module MouseBody() {
     axle_y_offset = 20;
-    surface_height = 2;
+    motor_y_offset = axle_y_offset-gear_radius-
+        GetTangentMotorProperty("WormRadius")*1.2;
+    motor_length = GetTangentMotorProperty("MotorFullLength");
+    motor_offset_from_surface = 1;
+    motor_z_offset = motor_offset_from_surface+surface_height+motor_length/2;
     axle_height = surface_height+gear_radius-1;
     module LowSurface()
     {
@@ -40,7 +45,7 @@ module MouseBody() {
                             tangent_axle(draw_axle=false, draw_stops=false);
             }
         }
-        module TangentAxleHolder()
+        module Holders()
         {
             holder_width = 4*AxleRadius();
             holder_height = axle_height-AxleRadius();
@@ -59,49 +64,89 @@ module MouseBody() {
                 }
             }
 
-            translate([AxleStopOffset(),
-                       axle_y_offset,
-                       holder_height/2+surface_height])
-                StaticPart();
-            translate([-AxleStopOffset(),
-                       axle_y_offset,
-                       holder_height/2+surface_height])
-                StaticPart();
+            module LowPart() {
+                translate([AxleStopOffset(),
+                           axle_y_offset,
+                           holder_height/2+surface_height])
+                    StaticPart();
+                translate([-AxleStopOffset(),
+                           axle_y_offset,
+                           holder_height/2+surface_height])
+                    StaticPart();
+            }
+
+            module MiddlePart() {
+                middle_height = motor_offset_from_surface+
+                    GetTangentMotorProperty("Axle")[1]+
+                    GetTangentMotorProperty("FrontCircle")[1]-
+                    2*holder_height;
+
+                translate([AxleStopOffset(),
+                           axle_y_offset,
+                           holder_height/2+holder_height+surface_height]) {
+                    rotate([0, 180, 0])
+                        StaticPart();
+                    translate([0,0,(middle_height+holder_height)/2])
+                        cube([AxleFasteningWidth(),
+                              holder_width, middle_height], center=true);
+                }
+                translate([-AxleStopOffset(),
+                           axle_y_offset,
+                           holder_height/2+holder_height+surface_height]) {
+                    rotate([0, 180, 0])
+                        StaticPart();
+                    translate([0,0,(middle_height+holder_height)/2])
+                        cube([AxleFasteningWidth(),
+                              holder_width, middle_height], center=true);
+                }
+
+                motor_low_point_z = surface_height+
+                    motor_offset_from_surface+
+                    GetTangentMotorProperty("Axle")[1]+
+                    GetTangentMotorProperty("FrontCircle")[1];
+                eps_from_gear = 1;
+                gear_high_point_z = axle_height+gear_radius;
+                cap_height = motor_low_point_z-gear_high_point_z-eps_from_gear;
+                cap_length = AxleFasteningWidth()+2*AxleStopOffset();
+
+                translate([0,
+                           axle_y_offset,
+                           gear_high_point_z+eps_from_gear+cap_height/2])
+                    cube([cap_length, holder_width, cap_height],
+                        center=true);
+
+                translate([0,
+                           motor_y_offset,
+                           gear_high_point_z+eps_from_gear+cap_height/2])
+                    cube([cap_length,
+                          GetTangentMotorProperty("MotorHeight"),
+                          cap_height],
+                         center=true);
+            }
+            LowPart();
+            MiddlePart();
         }
         Surface();
-        TangentAxleHolder();
+        Holders();
     }
 
     module TangentAxle() {
-
         translate([0, axle_y_offset, axle_height])
             rotate([0, 90, 0])
             tangent_axle();
 
-        translate([0,13,18])
+        translate([0,
+                   motor_y_offset,
+                   motor_z_offset])
             rotate([0, 90, 90])
             tangent_motor();
     }
 
     LowSurface();
     TangentAxle();
-
-
-//translate([5,53,8])
-//rotate([270, 0, 0])
-//import("./Servo_PZ-15320.stl");
-
-//translate([-10,17,12])
-//cube([18, 53, 2]);
-
-//translate([0,71,7])
-//rotate([90, 0, 0])
-//cylinder(44.5,5.25, 5.25);
 }
 
 for(val = debug){
     if(val =="Body")
         MouseBody();
-    if(val == "Holder")
-        TangentAxleHolder();
 }

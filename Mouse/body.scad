@@ -10,7 +10,7 @@ eps = 0.1;
 module MouseBody() {
     axle_y_offset = 20;
     motor_y_offset = axle_y_offset-gear_radius-
-        GetTangentMotorProperty("WormRadius")*1.2;
+        GetTangentMotorProperty("WormRadius")*1.8;
     motor_length = GetTangentMotorProperty("MotorFullLength");
     motor_offset_from_surface = 1;
     motor_z_offset = motor_offset_from_surface+surface_height+motor_length/2;
@@ -109,19 +109,56 @@ module MouseBody() {
                 cap_height = motor_low_point_z-gear_high_point_z-eps_from_gear;
                 cap_length = AxleFasteningWidth()+2*AxleStopOffset();
 
-                translate([0,
-                           axle_y_offset,
-                           gear_high_point_z+eps_from_gear+cap_height/2])
-                    cube([cap_length, holder_width, cap_height],
-                        center=true);
+                difference() {
+                    motor_box_scaler_big = 1.4;
+                    motor_box_scaler_small = motor_box_scaler_big*0.75;
+                    union() {
+                    translate([0,
+                               motor_y_offset,
+                               gear_high_point_z+eps_from_gear])
+                    //motor holder scale
+                    linear_extrude(GetTangentMotorProperty("MotorLength"))
+                    scale([for(i = [1:3]) motor_box_scaler_big])
+                    projection()
+                    rotate([0, 90, 90])
+                    dc_motor_draw();
 
-                translate([0,
-                           motor_y_offset,
-                           gear_high_point_z+eps_from_gear+cap_height/2])
-                    cube([cap_length,
-                          GetTangentMotorProperty("MotorHeight"),
-                          cap_height],
-                         center=true);
+                    translate([0,
+                               axle_y_offset,
+                               gear_high_point_z+eps_from_gear+cap_height/2])
+                        cube([cap_length, holder_width, cap_height],
+                             center=true);
+                    }
+
+                    translate([0,
+                               motor_y_offset,
+                               gear_high_point_z+eps_from_gear+cap_height])
+                        //motor holder scale
+                        linear_extrude(GetTangentMotorProperty("MotorLength"))
+                        scale([for(i = [1:3]) motor_box_scaler_small])
+                        projection()
+                        rotate([0, 90, 90])
+                        dc_motor_draw();
+
+                    translate([0,
+                               motor_y_offset,
+                               gear_high_point_z+
+                               eps_from_gear+
+                               cap_height-
+                               GetTangentMotorProperty("FrontCircle")[1]])
+                        //motor holder scale
+                        cylinder(d=GetTangentMotorProperty("FrontCircle")[0]*1.2,
+                                 h=GetTangentMotorProperty("FrontCircle")[1],
+                            $fn=100);
+                    translate([0,
+                               motor_y_offset,
+                               gear_high_point_z+eps_from_gear])
+                        //motor holder scale
+                        cylinder(d=GetTangentMotorProperty("Axle")[0]*1.4,
+                                 h=cap_height-
+                                 GetTangentMotorProperty("FrontCircle")[1],
+                                 $fn=100);
+                }
             }
             LowPart();
             MiddlePart();

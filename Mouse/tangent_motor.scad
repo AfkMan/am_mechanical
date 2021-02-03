@@ -23,7 +23,7 @@ eps = 0.01;
 //reductor description
 modul=0.5;
 worm_radius_scale=1;
-worm_length_scale = 0.91;
+worm_length_scale = 0.86;
 worm_length=motor_axle_l*worm_length_scale;
 worm_hole=motor_axle_d*1.1;
 gear_tooth_number=18;
@@ -39,6 +39,7 @@ function GetTangentMotorProperty(which) =
     which == "MotorFullLength" ? motor_full_length :
     which == "MotorWidth" ? motor_w_full :
     which == "MotorHeight" ? motor_h :
+    which == "MotorLength" ? motor_l :
     which == "Axle" ? [motor_axle_d, motor_axle_l] :
     which == "FrontCircle" ? [motor_front_circle_d, motor_front_circle_h] :
     assert(false, str("TangentMotor haven't property ", which));

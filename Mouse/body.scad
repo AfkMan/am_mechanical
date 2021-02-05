@@ -81,6 +81,7 @@ module MouseBody() {
                     GetTangentMotorProperty("FrontCircle")[1]-
                     2*holder_height;
 
+                //upper parts of axle holder
                 translate([AxleStopOffset(),
                            axle_y_offset,
                            holder_height/2+holder_height+surface_height]) {
@@ -109,6 +110,7 @@ module MouseBody() {
                 cap_height = motor_low_point_z-gear_high_point_z-eps_from_gear;
                 cap_length = AxleFasteningWidth()+2*AxleStopOffset();
 
+                //motor holder connected with axle holder
                 difference() {
                     motor_box_scaler_big = 1.4;
                     motor_box_scaler_small = motor_box_scaler_big*0.75;
@@ -123,6 +125,7 @@ module MouseBody() {
                     rotate([0, 90, 90])
                     dc_motor_draw();
 
+                    //crossbar for axle holder
                     translate([0,
                                axle_y_offset,
                                gear_high_point_z+eps_from_gear+cap_height/2])
@@ -159,6 +162,15 @@ module MouseBody() {
                                  GetTangentMotorProperty("FrontCircle")[1],
                                  $fn=100);
                 }
+                //snap fit foots
+                foot_width = cap_length/2;
+                foot_length = 0.6*holder_width;
+                foot_height = cap_height;
+                translate([0,
+                           axle_y_offset+holder_width/2+foot_length/2,
+                           gear_high_point_z+eps_from_gear+cap_height/2])
+                    cube([foot_width, foot_length, foot_height],
+                         center=true);
             }
             LowPart();
             MiddlePart();

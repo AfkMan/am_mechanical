@@ -1,7 +1,20 @@
-debug = ["SnapFitHead"];
+debug = ["SnapFitFoot"];
 eps=0.01;
 
+module SnapFitFoot(width=8, offset_h = 2, foot_height=30,
+                   angle=45, snap_length = 5, snap_height=5) {
+
+    cube([offset_h, width, foot_height], center=true);
+    translate([(snap_length-offset_h)/2,
+               0,
+               -(foot_height+snap_height)/2])
+    rotate([90, 180, 0])
+        SnapFitHead(angle, offset_h, [snap_length, snap_height, width]);
+
+}
+
 module SnapFitHead(angle=45, offset_h = 3, box=[8, 8, 8]) {
+    render()
     rotate([180, 180, 180]) {
             side1 = box[0]-offset_h;
             side2 = tan(angle)*side1;
@@ -15,10 +28,14 @@ module SnapFitHead(angle=45, offset_h = 3, box=[8, 8, 8]) {
                                     [0,side2],
                                     [side1,side2]]);
             }
-            }
+    }
 }
+
+
 
 for(val = debug){
     if(val =="SnapFitHead")
         SnapFitHead();
+    if(val =="SnapFitFoot")
+        SnapFitFoot();
 }

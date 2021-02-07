@@ -8,14 +8,13 @@ module SnapFitFoot(width=8, offset_h = 2, foot_height=30,
     translate([(snap_length-offset_h)/2,
                0,
                -(foot_height+snap_height)/2])
-    rotate([90, 180, 0])
         SnapFitHead(angle, offset_h, [snap_length, snap_height, width]);
 
 }
 
-module SnapFitHead(angle=45, offset_h = 3, box=[8, 8, 8]) {
+module SnapFitHead(angle=45, offset_h = 2, box=[5, 5, 8]) {
     render()
-    rotate([180, 180, 180]) {
+    rotate([-90, 0, 180]) {
             side1 = box[0]-offset_h;
             side2 = tan(angle)*side1;
             assert(side1 >= 0);

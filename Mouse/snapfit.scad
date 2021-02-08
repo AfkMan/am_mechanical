@@ -1,4 +1,4 @@
-debug = ["SnapFitFoot"];
+debug = ["SnapFitHead"];
 eps=0.01;
 
 module SnapFitFoot(width=8, offset_h = 2, foot_height=30,

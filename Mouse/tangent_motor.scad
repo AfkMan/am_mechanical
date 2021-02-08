@@ -38,6 +38,7 @@ function GetTangentMotorProperty(which) =
     which == "WormRadius" ? worm_radius_scale :
     which == "MotorFullLength" ? motor_full_length :
     which == "MotorWidth" ? motor_w_full :
+    which == "MotorWidthCube" ? motor_w_cube :
     which == "MotorHeight" ? motor_h :
     which == "MotorLength" ? motor_l :
     which == "Axle" ? [motor_axle_d, motor_axle_l] :

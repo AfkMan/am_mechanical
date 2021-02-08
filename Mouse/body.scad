@@ -22,26 +22,49 @@ motor_low_point_z = surface_height+
     motor_offset_from_surface+
     GetTangentMotorProperty("Axle")[1]+
     GetTangentMotorProperty("FrontCircle")[1];
+
+eps_from_gear = 1;
+gear_high_point_z = axle_height+gear_radius;
+
+cap_height = motor_low_point_z-gear_high_point_z-eps_from_gear;
+cap_length = AxleFasteningWidth()+2*AxleStopOffset();
+
+front_foot_square = [cap_length/2, 0.6*motor_holder_width, cap_height];
+front_foot_square_offset_y = axle_y_offset+motor_holder_width/2+
+    front_foot_square[1]/2;
+front_foot_width = 1;
+
+motor_front_snapfit_hole2 = [front_foot_square[0]+eps,
+                             2*front_foot_width,
+                             surface_height-front_foot_width];
+motor_front_foot_length = gear_high_point_z+eps_from_gear-
+    motor_front_snapfit_hole2[2];
 snapfit_angle=35;
 
-
+motor_box_scaler_big = 1.4;
+motor_box_scaler_small = motor_box_scaler_big*0.75;
 
 module MouseBody() {
-    eps_from_gear = 1;
-    gear_high_point_z = axle_height+gear_radius;
-
-    cap_height = motor_low_point_z-gear_high_point_z-eps_from_gear;
-    cap_length = AxleFasteningWidth()+2*AxleStopOffset();
-
-    front_foot_square = [cap_length/2, 0.6*motor_holder_width, cap_height];
-    front_foot_square_offset_y = axle_y_offset+motor_holder_width/2+
-        front_foot_square[1]/2;
-    front_foot_width = 1;
-
     module LowSurface()
     {
         module Surface()
         {
+            module MotorSnapFitHole(hole_length) {
+                cube([hole_length+eps,
+                      3*front_foot_width,
+                      surface_height+eps],
+                     center=true);
+                motor_front_snapfit_hole2_upd = [
+                    hole_length,
+                    motor_front_snapfit_hole2[1],
+                    motor_front_snapfit_hole2[2]];
+                translate([0,
+                           motor_front_snapfit_hole2[1]/2,
+                           -surface_height/2+motor_front_snapfit_hole2[2]/2-eps/2])
+                    cube(motor_front_snapfit_hole2_upd+
+                         [eps,0,eps], center=true);
+            }
+
             difference() {
                 //platform holding another elements of construction
                 height=40;
@@ -51,13 +74,13 @@ module MouseBody() {
                            [height, 0.1*length],
                            [0.5*height,length],
                            [0,length]];
-
+            
                 linear_extrude(surface_height) {
                     polygon(bezier_curve(0.01, eggLine));
                     mirror([1, 0, 0])
                         polygon(bezier_curve(0.01, eggLine));
                 }
-
+            
                 //holes for wheels
                 translate([0, 0, -eps])
                     linear_extrude(surface_height+1)
@@ -67,17 +90,25 @@ module MouseBody() {
                             translate([0, axle_y_offset, 0])
                             rotate([0, 90, 0])
                             tangent_axle(draw_axle=false, draw_stops=false);
-
+            
                 //hole for front motor holder
                 translate([0,
                            front_foot_square_offset_y+
                            front_foot_square[1]/2-0.6*front_foot_width,
                            surface_height/2])
-                    cube([front_foot_square[0]+eps,
-                          3*front_foot_width,
-                          surface_height+eps],
-                         center=true);
+                    MotorSnapFitHole(front_foot_square[0]);
+
+                //hole for back motor holder
+                translate([0,
+                           motor_y_offset-motor_box_scaler_big*
+                           GetTangentMotorProperty("MotorHeight")/2+
+                           0.6*front_foot_width,
+                           surface_height/2])
+                    rotate([0,0,180])
+                    MotorSnapFitHole(motor_box_scaler_big*
+                                     GetTangentMotorProperty("MotorWidthCube"));
             }
+            
             translate([0,front_foot_square_offset_y+
                        front_foot_square[1]/2+front_foot_width+eps,
                        surface_height/2+front_foot_width/2])
@@ -86,6 +117,35 @@ module MouseBody() {
                             [2*front_foot_width,
                              front_foot_width,
                              front_foot_square[0]+eps]);
+
+            translate([0,
+                       motor_y_offset-motor_box_scaler_big*
+                       GetTangentMotorProperty("MotorHeight")/2-
+                       front_foot_width-eps,
+                       surface_height/2+front_foot_width/2])
+                rotate([0,180,-90])
+                SnapFitHead(snapfit_angle, 1.2*front_foot_width,
+                            [2*front_foot_width,
+                             front_foot_width,
+                             front_foot_square[0]+eps]);
+
+
+            /* translate([0, */
+            /*            front_foot_square_offset_y+ */
+            /*            front_foot_square[1]/2-0.6*front_foot_width, */
+            /*            surface_height/2]) */
+            /*     MotorSnapFitHole(front_foot_square[0]); */
+
+            /* //hole for back motor holder */
+            /* translate([0, */
+            /*            motor_y_offset-motor_box_scaler_big* */
+            /*            GetTangentMotorProperty("MotorHeight")/2+ */
+            /*            0.6*front_foot_width, */
+            /*            surface_height/2]) */
+            /*     rotate([0,0,180]) */
+            /*     MotorSnapFitHole(motor_box_scaler_big* */
+            /*                      GetTangentMotorProperty("MotorWidthCube")); */
+
         }
         module Holders()
         {
@@ -144,8 +204,6 @@ module MouseBody() {
 
                 //motor holder connected with axle holder
                 difference() {
-                    motor_box_scaler_big = 1.4;
-                    motor_box_scaler_small = motor_box_scaler_big*0.75;
                     union() {
                     translate([0,
                                motor_y_offset,
@@ -202,10 +260,24 @@ module MouseBody() {
                            front_foot_square_offset_y+
                            front_foot_square[1]/2-
                            front_foot_width/2,
-                           (gear_high_point_z+eps_from_gear)/2])
+                           motor_front_foot_length/2+motor_front_snapfit_hole2[2]-eps/2])
                     rotate([0,0,90])
                     SnapFitFoot(front_foot_square[0], front_foot_width,
-                                gear_high_point_z+eps_from_gear,
+                                 motor_front_foot_length+eps,
+                                snapfit_angle,
+                                2*front_foot_width,
+                                front_foot_width);
+                translate([0,
+                           motor_y_offset-
+                           motor_box_scaler_big*
+                           GetTangentMotorProperty("MotorHeight")/2+
+                           front_foot_width/2,
+                           motor_front_foot_length/2+motor_front_snapfit_hole2[2]-eps/2])
+                    rotate([0,0,-90])
+                    SnapFitFoot(motor_box_scaler_big*
+                                GetTangentMotorProperty("MotorWidthCube"),
+                                front_foot_width,
+                                motor_front_foot_length+eps,
                                 snapfit_angle,
                                 2*front_foot_width,
                                 front_foot_width);

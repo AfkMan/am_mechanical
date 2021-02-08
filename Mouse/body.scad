@@ -129,23 +129,6 @@ module MouseBody() {
                              front_foot_width,
                              front_foot_square[0]+eps]);
 
-
-            /* translate([0, */
-            /*            front_foot_square_offset_y+ */
-            /*            front_foot_square[1]/2-0.6*front_foot_width, */
-            /*            surface_height/2]) */
-            /*     MotorSnapFitHole(front_foot_square[0]); */
-
-            /* //hole for back motor holder */
-            /* translate([0, */
-            /*            motor_y_offset-motor_box_scaler_big* */
-            /*            GetTangentMotorProperty("MotorHeight")/2+ */
-            /*            0.6*front_foot_width, */
-            /*            surface_height/2]) */
-            /*     rotate([0,0,180]) */
-            /*     MotorSnapFitHole(motor_box_scaler_big* */
-            /*                      GetTangentMotorProperty("MotorWidthCube")); */
-
         }
         module Holders()
         {
